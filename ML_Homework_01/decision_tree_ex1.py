@@ -1,19 +1,4 @@
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from csv import reader
-
-def load_csv(filename):
-    file = open(filename, "rb")
-    lines = reader(file)
-    dataset = list(lines)
-    return dataset
-
-def str_column_to_float(dataset, column):
-    for row in dataset:
-        row[column] = float(row[column].strip())
-
 
 # Split a dataset based on an attribute and an attribute value
 def test_split(index, value, dataset):
@@ -112,12 +97,31 @@ def predict(node, row):
         else:
             return node['right']
 
+def print_tree(node, depth=0):
+    if isinstance(node, dict):
+        print('%s[X%d < %.3f]' % ((depth * ' ', (node['index'] + 1), node['value'])))
+        print_tree(node['left'], depth + 1)
+        print_tree(node['right'], depth + 1)
+    else:
+        print('%s[%s]' % ((depth * ' ', node)))
 
 # Classification and Regression Tree Algorithm
 def decision_tree(train, test, max_depth, min_size):
     tree = build_tree(train, max_depth, min_size)
+    print_tree(tree)
     predictions = list()
     for row in test:
         prediction = predict(tree, row)
         predictions.append(prediction)
     return (predictions)
+
+max_depth = 2
+min_size = 0
+
+dataset = np.genfromtxt('01_homework_dataset.csv', delimiter=',', skip_header=1,
+                     skip_footer=0)
+datalist = dataset.tolist()
+test = [[4.1,-0.1,2.2],[6.1,0.4,1.3]]
+
+pred = decision_tree(datalist,test,max_depth,min_size)
+print(pred)
