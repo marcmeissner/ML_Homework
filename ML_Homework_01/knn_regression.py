@@ -9,23 +9,26 @@ def euclidean_distance(x1, x2):
     distance = np.sqrt(distance)
     return distance
 
-def get_neighbors_labels(X_train, y_train, x_new, k):
+def get_neighbors(X_train, y_train, x_new, k):
     dist = np.zeros(np.size(y_train))
     for i in range(np.size(y_train)):
         dist[i] = euclidean_distance(X_train[i, :], x_new)
     maxDist = np.amax(dist) + 1.0
-    neighbors_labels = []
+    neighbors_labels = np.empty(k)
+    neighbors_distances = np.empty(k)
     for i in range(k):
         minInd = np.argmin(dist)
+        neighbors_distances[i] = dist[minInd]
+        neighbors_labels[i] = y_train[minInd]
         dist[minInd] = maxDist
-        neighbors_labels.append(y_train[minInd])
-    return neighbors_labels
+    return neighbors_labels, neighbors_distances
 
-def get_response(neighbors, num_classes=3):
-    class_votes = np.zeros(num_classes)
-    for elem in neighbors:
-        class_votes[int(elem)] += 1.0
-    return np.argmax(class_votes)
+def get_response(neighbors, distances, num_classes=3):
+    sum_dist = np.sum(1/distances)
+    y_hat = 0
+    y_hat += np.sum((1/distances) * neighbors)
+    y_hat /= sum_dist
+    return y_hat
 
 def compute_accuracy(y_pred, y_test):
     n_right = 0.0
@@ -38,8 +41,8 @@ def compute_accuracy(y_pred, y_test):
 def predict(X_train, y_train, X_test, k):
     y_pred = []
     for x_new in X_test:
-        neighbors = get_neighbors_labels(X_train, y_train, x_new, k)
-        y_pred.append(get_response(neighbors))
+        neighbors, distances = get_neighbors(X_train, y_train, x_new, k)
+        y_pred.append(get_response(neighbors,distances))
     return y_pred
 
 dataset = np.genfromtxt('01_homework_dataset.csv', delimiter=',', skip_header=1,
