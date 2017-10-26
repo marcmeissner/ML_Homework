@@ -124,4 +124,5 @@ datalist = dataset.tolist()
 test = [[4.1,-0.1,2.2],[6.1,0.4,1.3]]
 
 pred = decision_tree(datalist,test,max_depth,min_size)
+print("pred = ")
 print(pred)

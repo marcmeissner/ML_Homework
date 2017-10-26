@@ -52,4 +52,5 @@ X_train = dataset[:,0:3]
 y_train = dataset[:,3]
 X_test = np.array([[4.1,-0.1,2.2],[6.1,0.4,1.3]])
 y_pred = predict(X_train, y_train, X_test, k)
+print("y_pred = ")
 print(y_pred)
