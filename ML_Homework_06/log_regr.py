@@ -112,11 +112,18 @@ def get_gradient(X, y, w, mini_batch_indices, lmbda):
     N_batch = len(mini_batch_indices)
     D = len(w)
     dw = np.zeros(D)
+    #for j in range(D):
+    #    for i in range(N_batch):
+    #        dw[j] += 1/N_batch * \
+    #            (sigmoid(np.matmul(X[mini_batch_indices[i],:],w)) - y[mini_batch_indices[i]]) \
+    #            * X[mini_batch_indices[i],j] + lmbda*w[j]
+
+
     for j in range(D):
         dw[j] = 1 / N_batch * \
-                np.matmul((sigmoid(np.matmul(X[mini_batch_indices], w)) - y[mini_batch_indices])
+                np.matmul((sigmoid(np.matmul(X[mini_batch_indices], w)) - y[mini_batch_indices]) \
                           , X[mini_batch_indices, j]) \
-                + lmbda * w[j] *0
+                + lmbda * w[j]*0
     return dw
 
 
@@ -194,7 +201,7 @@ def predict(X, w):
         A binary array of predictions.
     """
     # TODO
-    y_pred = sigmoid(np.matmul(X,w))
+    y_pred = np.matmul(X,w)
     y_pred[y_pred<0] = 0
     y_pred[y_pred>0] = 1
     return y_pred
