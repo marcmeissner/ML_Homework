@@ -91,6 +91,7 @@ def transform(X, U, L):
     return X_t
 
 X_t = transform(X, U, L)
+print(X_t)
 
 M = np.array([[1, 2], [6, 3],[0, 2]])
 
@@ -112,7 +113,8 @@ def reduce_to_one_dimension(M):
     # TODO
     U, s, V = np.linalg.svd(M,full_matrices=False)
     M_rankOne = s[0] * np.outer(U[:,0],V[0,:])
-    M_t = M_rankOne[0]
+    M_t = M_rankOne[:,0]
     return M_t
 
 M_t = reduce_to_one_dimension(M)
+print(M_t)
