@@ -111,9 +111,8 @@ def reduce_to_one_dimension(M):
 
     """
     # TODO
-    U, s, V = np.linalg.svd(M,full_matrices=False)
-    M_rankOne = s[0] * np.outer(U[:,0],V[0,:])
-    M_t = M_rankOne[:,0]
+    U, S, V = np.linalg.svd(M,full_matrices=False)
+    M_t = U[:,0] * S[0]
     return M_t
 
 M_t = reduce_to_one_dimension(M)
