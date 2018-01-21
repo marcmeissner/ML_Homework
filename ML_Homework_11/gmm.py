@@ -57,15 +57,13 @@ def gmm_log_likelihood(X, means, covs, mixing_coefs):
     log_likelihood : float
         log p(X | \mu, \Sigma, \pi) - Log-likelihood of the data under the given GMM.
     """
-    N = len(X[:, 0])
-    K = len(mixing_coefs)
     log_likelihood = 0
-    for i in range(N):
-        helper = 0
-        for j in range(K):
-            pdf = multivariate_normal.pdf(X[i, :], mean=means[j,:], cov=covs[j,:,:])
-            helper += mixing_coefs[j] * pdf
-        log_likelihood += np.log(helper)
+    K = len(mixing_coefs)
+    for i in range(np.size(X, 0)):
+        log_likelihood += np.log(sum( \
+            [mixing_coefs[k] * \
+             multivariate_normal.pdf(X[i, :], means[k, :], covs[k, :, :]) for k in range(K)]))
+
     return log_likelihood
 
 
@@ -90,12 +88,20 @@ def e_step(X, means, covs, mixing_coefs):
     responsibilities : np.array, shape [N, K]
         Cluster responsibilities for the given data.
     """
+
+    responsibilities = np.zeros([np.size(X, 0), len(mixing_coefs)])
     K = len(mixing_coefs)
-    gamma = np.zeros(len(X[:,0]))
-    for i in range(K):
-        gamma[i] = mixing_coefs[i] * \
-                   multivariate_normal.pdf(X[i, :], mean=means[i,:], cov=covs[i,:,:])
-    responsibilities = gamma/np.sum(gamma)
+    N = np.size(X, 0)
+
+    for n in range(N):
+        denominator = sum([mixing_coefs[k] * multivariate_normal.pdf( \
+            X[n, :], means[k, :], covs[k, :, :]) \
+                           for k in range(K)])
+
+        responsibilities[n, :] = [mixing_coefs[k] * multivariate_normal.pdf( \
+            X[n, :], means[k, :], covs[k, :, :]) \
+                                  for k in range(K)] / denominator
+
     return responsibilities
 
 
@@ -119,21 +125,24 @@ def m_step(X, responsibilities):
         Mixing proportions of the GMM (\pi in lecture notes).
 
     """
-    K = len(responsibilities)
-    N = len(X[:,0])
-    D = len(X[0,:])
-    N_k = np.sum(responsibilities,axis=0)
-    mixing_coefs = np.zeros(K)
-    means = np.zeros(K,D)
-    covs = np.zeros(K,D,D)
-    for k in range(K):
-        means[k] = X * responsibilities[k]
 
+    N = np.size(responsibilities, 0)
+    K = np.size(responsibilities, 1)
+    D = np.size(X, 1)
+
+    covs = np.zeros([K, D, D])
+
+    N_k = np.array([sum(responsibilities[:, k]) for k in range(K)])
+    mixing_coefs = N_k[:] / N
+    # assign \mu_k
+    means = np.array([1 / N_k[k] * sum([responsibilities[n, k] * X[n, :] for \
+               n in range(N)]) for k in range(K)])
+    # assign covs_k
     for k in range(K):
-        for n in range(N):
-            diff = X[n,:] - means(K)
-            covs[k, :, :] += responsibilities[k] * np.outer(diff,diff.T)
-    means, covs, mixing_coefs = None, None, None
+        covs[k, :, :] = 1 / N_k[k] * np.sum([responsibilities[n, k] * \
+                np.outer((X[n, :] - means[k, :]), (X[n, :] - means[k, :])) for \
+                n in range(N)], axis=0)
+
     return means, covs, mixing_coefs
 
 
